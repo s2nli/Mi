@@ -27,3 +27,13 @@ Fallback: results from all providers are merged and de-duplicated; if a stream f
 Only executed: `node --check` on the app script, `sw.js` and `api/proxy.js` (passed). Everything else (live APIs, playback, IndexedDB, PWA install, layouts) is UNVERIFIED: the build sandbox had no network or browser.
 Downloads rely on the provider's URL; browsers may open cross-origin files instead of saving them.
 Licenses: no code was copied from the archives (Knox is MIT, AirBeats GPL); only endpoint knowledge was reused.
+
+## v2 additions
+Explore (search shortcuts), Radio (Radio Browser: `all.api.radio-browser.info/json/stations/{topvote/30|bycountry/India|bylanguage/hindi|bytag/jazz}`; paths from Knox tests, host name not in the archives), Local files, Downloads (Kilpy `dl` links only), Settings (provider toggles + live health check, speed, sleep timer, storage limit, export/import, clears), resume position, update notice, hardened proxy (host allowlist, https only, no redirects, 2 MB cap, rate limit) and security headers.
+Not built yet: equalizer/visualizer/crossfade (Web Audio breaks non-CORS streams), artist/album pages, queue reorder, full-screen player gestures, podcasts, KuGou/BetterLyrics, translation, pause/resume downloads, tests beyond `node --check`.
+Status: only `node --check` was run; everything else is unverified.
+
+## v3 additions
+Background/lock-screen controls (Media Session: play, pause, next, previous, seek ±10 s, seekto, position and playback state), Install button + richer manifest (id, scope, shortcuts), Artists and Albums pages (jiosvvnn `/search/artists|albums`; tapping runs a song search for that name), queue reorder (↑/↓), KuGou lyrics fallback (only if LRCLIB has none; 8 s duration tolerance is my choice), light/dark/system theme, M3U export of playlists.
+Background playback: audio keeps playing when the screen locks or you switch apps on Android Chrome (best when installed); iOS Safari may stop it. This depends on the browser; it is not guaranteed.
+Still not built: equalizer/visualizer/crossfade, podcasts, swipe full-screen player, accounts/sync, BetterLyrics, automated tests. Verified: `node --check` only.

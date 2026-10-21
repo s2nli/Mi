@@ -1,8 +1,8 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>CODΞLYNX</title>
 <link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0e0e10"><link rel="icon" href="/icon-192.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>
-:root{--bg:#0e0e10;--s:#17171a;--s2:#212126;--t:#f2f2f3;--m:#9a9aa3;--a:#8f8cff}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:15px system-ui,sans-serif}
+:root{--bg:#0e0e10;--s:#17171a;--s2:#212126;--t:#f2f2f3;--m:#9a9aa3;--a:#34d399}
+:root[data-theme=light]{--bg:#f6f6f7;--s:#fff;--s2:#e9e9ec;--t:#17171a;--m:#62626b;--a:#0f9f6e}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:15px system-ui,sans-serif}
 button{background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:8px;border-radius:8px}button:hover,button:focus-visible{background:var(--s2);outline:2px solid transparent}
 button.on{color:var(--a)}input[type=range]{accent-color:var(--a)}
 #app{display:flex;min-height:100vh}nav{display:flex;flex-direction:column;gap:4px;width:200px;padding:20px 12px;background:var(--s)}nav b{letter-spacing:.14em;padding:0 8px 16px}nav button{text-align:left}nav .act{color:var(--a)}
@@ -31,7 +31,7 @@ const dec=s=>String(s??'').replace(/&quot;/g,'"').replace(/&amp;/g,'&').replace(
 const fmt=s=>isFinite(s)&&s>0?Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'):'0:00';
 const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.i);toast.i=setTimeout(()=>t.style.display='none',3000)};
 /* ---------- storage (IndexedDB) ---------- */
-const dbp=new Promise((res,rej)=>{const r=indexedDB.open('codelynx',1);r.onupgradeneeded=()=>['liked','playlists','history'].forEach(n=>r.result.createObjectStore(n,{keyPath:'id'}));r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const dbp=new Promise((res,rej)=>{const r=indexedDB.open('codelynx',2);r.onupgradeneeded=()=>['liked','playlists','history','local','offline'].forEach(n=>{if(!r.result.objectStoreNames.contains(n))r.result.createObjectStore(n,{keyPath:'id'})});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
 const tx=async(s,m,f)=>{const d=await dbp;return new Promise((res,rej)=>{const t=d.transaction(s,m);const o=f(t.objectStore(s));t.oncomplete=()=>res(o&&o.result);t.onerror=()=>rej(t.error)})};
 const put=(s,v)=>tx(s,'readwrite',o=>o.put(v)),del=(s,k)=>tx(s,'readwrite',o=>o.delete(k)),all=s=>tx(s,'readonly',o=>o.getAll());
 let liked=new Set();all('liked').then(a=>{liked=new Set(a.map(x=>x.id))}).catch(()=>{});
@@ -55,34 +55,35 @@ const P={
  audius:{label:'Audius',search:async q=>(await jget(`${AUD}/tracks/search?query=${enc(q)}&limit=20`)).data.map(aud)}
 };
 const key=t=>t.title.toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/[^\p{L}\p{N}]+/g,' ').trim()+'|'+t.artist.toLowerCase().split(/[,&]/)[0].trim();
-async function fan(fn){const bad=[],groups=await Promise.all(Object.entries(P).filter(([,p])=>p[fn]).map(async([n,p])=>{try{return await p[fn](...fan.args)}catch{bad.push(p.label);return[]}}));const m=new Map();for(const t of groups.flat()){if(!t.title||!t.streams.length&&!t.dl)continue;t.id=t.provider+':'+t.raw;const k=key(t),h=m.get(k);if(h)(h.alts??=[]).push(t);else m.set(k,t)}return{list:[...m.values()],bad}}
+const off=()=>{try{return JSON.parse(localStorage.cl_off||'[]')}catch{return[]}};
+async function fan(fn){const bad=[],groups=await Promise.all(Object.entries(P).filter(([n,p])=>p[fn]&&!off().includes(n)).map(async([n,p])=>{try{return await p[fn](...fan.args)}catch{bad.push(p.label);return[]}}));const m=new Map();for(const t of groups.flat()){if(!t.title||!t.streams.length&&!t.dl)continue;t.id=t.provider+':'+t.raw;const k=key(t),h=m.get(k);if(h)(h.alts??=[]).push(t);else m.set(k,t)}return{list:[...m.values()],bad}}
 const searchAll=async q=>{fan.args=[q];return fan('search')};const trending=async()=>{fan.args=[];return fan('trending')};
 async function similar(t){const p=P[t.provider];if(p?.similar)try{return await p.similar(t)}catch{}return[]}
 /* ---------- lyrics (LRCLIB) ---------- */
 const parseLrc=s=>(s||'').split('\n').map(l=>{const m=l.match(/\[(\d+):(\d+)(?:\.(\d+))?\](.*)/);return m&&m[4].trim()?{t:+m[1]*60+ +m[2]+(m[3]?+m[3].padEnd(3,'0').slice(0,3)/1000:0),x:m[4].trim()}:null}).filter(Boolean);
-async function lyrics(t){const r=await jget(`https://lrclib.net/api/search?q=${enc(t.artist+' '+t.title)}`);const h=r.find(x=>x.syncedLyrics)||r.find(x=>x.plainLyrics);return h?{sync:parseLrc(h.syncedLyrics),plain:h.plainLyrics||''}:null}
+async function lyrics(t){const r=await jget(`https://lrclib.net/api/search?q=${enc(t.artist+' '+t.title)}`);const h=r.find(x=>x.syncedLyrics)||r.find(x=>x.plainLyrics);return h?{sync:parseLrc(h.syncedLyrics),plain:h.plainLyrics||''}:(window.CL?.altLyrics?await CL.altLyrics(t):null)}
 /* ---------- player ---------- */
 const au=new Audio();au.preload='auto';au.volume=.8;
 const S={q:[],i:-1,shuf:false,rep:'off',si:0};
 const cur=()=>S.q[S.i];
 function setSrc(){const t=cur();if(!t)return;au.src=t.streams[S.si]||t.dl;au.play().catch(()=>{})}
 function play(list,i){S.q=list.slice();S.i=i;S.si=0;load()}
-function load(){const t=cur();if(!t)return;S.si=0;setSrc();ui();put('history',{id:t.id,at:Date.now(),track:strip(t)});navigator.mediaSession&&(navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist,album:t.album,artwork:t.artwork?[{src:t.artwork}]:[]}))}
+function load(){const t=cur();if(!t)return;S.si=0;setSrc();ui();if(!t.local)put('history',{id:t.id,at:Date.now(),track:strip(t)});navigator.mediaSession&&(navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist,album:t.album,artwork:t.artwork?[{src:t.artwork}]:[]}))}
 const strip=t=>({...t,alts:undefined});
 function next(auto){if(!S.q.length)return;if(auto&&S.rep==='one'){au.currentTime=0;au.play();return}let n=S.shuf?Math.floor(Math.random()*S.q.length):S.i+1;if(n>=S.q.length){if(S.rep==='all')n=0;else return autoplay()}S.i=n;load()}
 async function autoplay(){const t=cur();if(!t)return;const s=(await similar(t)).filter(x=>x.streams.length);if(s.length){s.forEach(x=>x.id=x.provider+':'+x.raw);S.q.push(...s);S.i++;load();toast('Autoplay: similar tracks')}}
 function prev(){if(au.currentTime>3){au.currentTime=0;return}S.i=Math.max(0,S.i-1);load()}
 au.onended=()=>next(true);
-au.onerror=()=>{const t=cur();if(!t)return;if(t.streams[S.si+1]){S.si++;return setSrc()}const a=t.alts?.shift();if(a){toast('Trying '+P[a.provider].label);t.streams=a.streams;t.dl=a.dl||t.dl;S.si=0;return setSrc()}toast('Track unavailable, skipping');next(false)};
-au.ontimeupdate=()=>{$('#cu').textContent=fmt(au.currentTime);if(au.duration){$('#seek').value=au.currentTime/au.duration*1000;$('#du').textContent=fmt(au.duration)}hilite()};
-au.onplay=au.onpause=()=>$('#pp').textContent=au.paused?'▶':'⏸';
+au.onerror=()=>{if(window.CL?.eqProbe)return;const t=cur();if(!t)return;if(t.streams[S.si+1]){S.si++;return setSrc()}const a=t.alts?.shift();if(a){toast('Trying '+P[a.provider].label);t.streams=a.streams;t.dl=a.dl||t.dl;S.si=0;return setSrc()}toast('Track unavailable, skipping');next(false)};
+au.ontimeupdate=()=>{$('#cu').textContent=fmt(au.currentTime);if(au.duration){$('#seek').value=au.currentTime/au.duration*1000;$('#du').textContent=fmt(au.duration)}hilite();if(navigator.mediaSession?.setPositionState&&au.duration>0&&isFinite(au.duration))try{navigator.mediaSession.setPositionState({duration:au.duration,position:Math.min(au.currentTime,au.duration),playbackRate:au.playbackRate||1})}catch{}};
+au.onplay=au.onpause=()=>{$('#pp').textContent=au.paused?'▶':'⏸';if(navigator.mediaSession)navigator.mediaSession.playbackState=au.paused?'paused':'playing'};
 au.onwaiting=()=>$('#pp').textContent='…';au.onplaying=()=>$('#pp').textContent='⏸';
 $('#seek').oninput=e=>{if(au.duration)au.currentTime=e.target.value/1000*au.duration};$('#vol').oninput=e=>au.volume=e.target.value/100;
 $('#pp').onclick=()=>au.src?(au.paused?au.play():au.pause()):0;$('#nx').onclick=()=>next(false);$('#pv').onclick=prev;
 $('#sh').onclick=e=>{S.shuf=!S.shuf;e.currentTarget.classList.toggle('on',S.shuf)};
 $('#rp').onclick=e=>{S.rep={off:'all',all:'one',one:'off'}[S.rep];e.currentTarget.textContent=S.rep==='one'?'↻1':'↻';e.currentTarget.classList.toggle('on',S.rep!=='off')};
 $('#lk').onclick=()=>cur()&&toggleLike(cur());
-if('mediaSession' in navigator)for(const[a,f]of[['play',()=>au.play()],['pause',()=>au.pause()],['nexttrack',()=>next(false)],['previoustrack',prev]])try{navigator.mediaSession.setActionHandler(a,f)}catch{}
+if('mediaSession' in navigator)for(const[a,f]of[['play',()=>au.play()],['pause',()=>au.pause()],['nexttrack',()=>next(false)],['previoustrack',prev],['seekbackward',()=>{au.currentTime=Math.max(0,au.currentTime-10)}],['seekforward',()=>{au.currentTime+=10}],['seekto',d=>{if(d&&d.seekTime!=null)au.currentTime=d.seekTime}]])try{navigator.mediaSession.setActionHandler(a,f)}catch{}
 addEventListener('keydown',e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName))return;if(e.code==='Space'){e.preventDefault();$('#pp').click()}if(e.key==='ArrowRight')next(false);if(e.key==='ArrowLeft')prev()});
 function ui(){const t=cur();$('#tt').textContent=t?t.title:'Nothing playing';$('#ta').textContent=t?t.artist+(t.preview?' · preview':''):'';const a=$('#art');a.src=t?.artwork||'';$('#lk').textContent=t&&liked.has(t.id)?'♥':'♡'}
 async function toggleLike(t){if(liked.has(t.id)){liked.delete(t.id);await del('liked',t.id)}else{liked.add(t.id);await put('liked',{id:t.id,track:strip(t)})}ui();if(view==='library')route()}
@@ -92,13 +93,14 @@ const row=(t,i)=>`<div class="row"><div class="ph" style="${t.artwork?'':''}">${
 const rows=l=>{list=l;return l.length?l.map(row).join(''):'<p class="sub">Nothing here yet.</p>'};
 async function route(){view=(location.hash||'#home').slice(1).split('/')[0];document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('act',b.dataset.v===view));const m=$('#main');
  if(view==='home'){m.innerHTML='<h2>Trending</h2><p class="sub">Loading…</p>';const r=await trending();m.innerHTML='<h2>Trending</h2>'+(r.bad.length?`<p class="sub">Unavailable: ${esc(r.bad.join(', '))} <button data-a="retry">Retry</button></p>`:'')+rows(r.list)}
- else if(view==='search'){m.innerHTML='<input class="search" id="q" placeholder="Search songs, artists…" aria-label="Search" autofocus><div id="res"></div>';const q=$('#q');let tm;const go=async()=>{const v=q.value.trim();if(!v)return;$('#res').innerHTML='<p class="sub">Searching…</p>';const r=await searchAll(v);$('#res').innerHTML=(r.bad.length?`<p class="sub">No response from: ${esc(r.bad.join(', '))}</p>`:'')+rows(r.list)};q.oninput=()=>{clearTimeout(tm);tm=setTimeout(go,400)};q.onkeydown=e=>e.key==='Enter'&&go()}
+ else if(view==='search'){m.innerHTML='<input class="search" id="q" placeholder="Search songs, artists…" aria-label="Search" autofocus><div id="res"></div>';const q=$('#q');let tm;const go=async()=>{const v=q.value.trim();if(!v)return;$('#res').innerHTML='<p class="sub">Searching…</p>';const r=await searchAll(v);$('#res').innerHTML=(r.bad.length?`<p class="sub">No response from: ${esc(r.bad.join(', '))}</p>`:'')+rows(r.list)};q.oninput=()=>{clearTimeout(tm);tm=setTimeout(go,400)};q.onkeydown=e=>e.key==='Enter'&&go();if(sessionStorage.cl_q){q.value=sessionStorage.cl_q;sessionStorage.removeItem('cl_q');go()}}
  else if(view==='library'){const[l,p,h]=await Promise.all([all('liked'),all('playlists'),all('history')]);const hs=h.sort((a,b)=>b.at-a.at).slice(0,30).map(x=>x.track);m.innerHTML=`<h2>Liked Songs</h2>${rows(l.map(x=>x.track))}<h2>Playlists <button data-a="newpl">＋ New</button></h2>${p.map(x=>`<details><summary>${esc(x.name)} (${x.tracks.length}) <button data-a="delpl" data-id="${esc(x.id)}">Delete</button></summary><div class="plr" data-id="${esc(x.id)}"></div></details>`).join('')||'<p class="sub">No playlists yet.</p>'}<h2>Recently played</h2>${rows(hs)}`;
   m.dataset.pl=JSON.stringify(p);m._lists={liked:l.map(x=>x.track),hist:hs};document.querySelectorAll('.plr').forEach(d=>{const pl=p.find(x=>x.id===d.dataset.id);d.innerHTML=pl.tracks.map(t=>`<div class="row"><div class="i" data-a="playpl" data-id="${esc(pl.id)}" data-tid="${esc(t.id)}"><div>${esc(t.title)}</div><div class="sub">${esc(t.artist)}</div></div><button data-a="rmpl" data-id="${esc(pl.id)}" data-tid="${esc(t.id)}">✕</button></div>`).join('')||'<p class="sub">Empty.</p>'})}
+ else if(window.CL?.views[view])await CL.views[view](m);
 }
 $('#main').addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,t=list[+b.dataset.i];
  if(a==='play')play(list,+b.dataset.i);else if(a==='like')toggleLike(t).then(route);else if(a==='next'){S.q.splice(S.i+1,0,t);toast('Plays next')}else if(a==='pl')pick(t);
- else if(a==='dl'){const l=document.createElement('a');l.href=t.dl||t.streams[0];l.download=(t.artist+' - '+t.title).replace(/[\\/:*?"<>|]/g,'_')+'.mp3';l.target='_blank';l.rel='noopener';l.click();toast('Download started if the provider allows it')}
+ else if(a==='dl'){if(t.dl&&window.CL?.download)return CL.download(t);const l=document.createElement('a');l.href=t.dl||t.streams[0];l.download=(t.artist+' - '+t.title).replace(/[\\/:*?"<>|]/g,'_')+'.mp3';l.target='_blank';l.rel='noopener';l.click();toast('Download started if the provider allows it')}
  else if(a==='retry')route();else if(a==='newpl'){const n=prompt('Playlist name');if(n?.trim()){await put('playlists',{id:'pl'+Date.now(),name:n.trim(),tracks:[]});route()}}
  else if(a==='delpl'){e.preventDefault();if(confirm('Delete playlist?')){await del('playlists',b.dataset.id);route()}}
  else if(a==='playpl'||a==='rmpl'){const p=(await all('playlists')).find(x=>x.id===b.dataset.id),i=p.tracks.findIndex(x=>x.id===b.dataset.tid);if(a==='playpl')play(p.tracks,i);else{p.tracks.splice(i,1);await put('playlists',p);route()}}});
@@ -108,11 +110,12 @@ let pm=null,ly=null;const pn=$('#panel');
 function hilite(){if(pm!=='ly'||!ly?.sync?.length)return;let k=-1;ly.sync.forEach((l,i)=>{if(l.t<=au.currentTime)k=i});pn.querySelectorAll('.ly p').forEach((p,i)=>{p.className=i===k?'cur':'';if(i===k&&!pn._m)p.scrollIntoView({block:'center',behavior:'smooth'})})}
 $('#ql').onclick=()=>{pm=pm==='q'?null:'q';drawPanel()};
 $('#ly').onclick=async()=>{pm=pm==='ly'?null:'ly';drawPanel();if(pm==='ly'&&cur()){pn.innerHTML='<p class="sub">Loading lyrics…</p>';try{ly=await lyrics(cur())}catch{ly=null}drawPanel()}};
-function drawPanel(){pn.classList.toggle('show',!!pm);if(pm==='q'){pn.innerHTML='<h2>Queue</h2>'+S.q.map((t,i)=>`<div class="row"><div class="i" data-q="${i}"><div class="${i===S.i?'':''}">${i===S.i?'▶ ':''}${esc(t.title)}</div><div class="sub">${esc(t.artist)}</div></div><button data-rm="${i}">✕</button></div>`).join('')||'<p class="sub">Queue is empty.</p>'}
+function drawPanel(){pn.classList.toggle('show',!!pm);if(pm==='q'){pn.innerHTML='<h2>Queue</h2>'+S.q.map((t,i)=>`<div class="row"><div class="i" data-q="${i}"><div class="${i===S.i?'':''}">${i===S.i?'▶ ':''}${esc(t.title)}</div><div class="sub">${esc(t.artist)}</div></div><button data-up="${i}" title="Move up">↑</button><button data-dn="${i}" title="Move down">↓</button><button data-rm="${i}">✕</button></div>`).join('')||'<p class="sub">Queue is empty.</p>'}
  else if(pm==='ly'){pn.innerHTML=ly?`<div class="ly">${ly.sync.length?ly.sync.map(l=>`<p>${esc(l.x)}</p>`).join(''):`<pre style="white-space:pre-wrap;font:inherit">${esc(ly.plain)}</pre>`}</div>`:'<p class="sub">No lyrics found on LRCLIB for this track.</p>'}}
-pn.addEventListener('click',e=>{const q=e.target.closest('[data-q]'),r=e.target.closest('[data-rm]');if(q){S.i=+q.dataset.q;load();drawPanel()}if(r){const i=+r.dataset.rm;S.q.splice(i,1);if(i<S.i)S.i--;drawPanel()}});
+pn.addEventListener('click',e=>{const q=e.target.closest('[data-q]'),r=e.target.closest('[data-rm]');const u=e.target.closest('[data-up],[data-dn]');if(u){const i=+(u.dataset.up??u.dataset.dn),j=u.dataset.up!==undefined?i-1:i+1;if(j>=0&&j<S.q.length){[S.q[i],S.q[j]]=[S.q[j],S.q[i]];if(S.i===i)S.i=j;else if(S.i===j)S.i=i;drawPanel()}return}if(q){S.i=+q.dataset.q;load();drawPanel()}if(r){const i=+r.dataset.rm;S.q.splice(i,1);if(i<S.i)S.i--;drawPanel()}});
 pn.addEventListener('wheel',()=>{pn._m=1;setTimeout(()=>pn._m=0,4000)});
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{pm=null;drawPanel();location.hash=b.dataset.v;if(location.hash==='#'+b.dataset.v)route()});
+window.CL={views:{},S,au,P,play,toast,esc,jget,put,del,all,tx,strip,route,ui,rows,eqProbe:false,parseLrc};
 addEventListener('hashchange',route);route();
 if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
-</script></body></html>
+</script><script type="module" src="/ext.js"></script></body></html>
