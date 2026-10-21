@@ -1,0 +1,1 @@
+{"name":"codelynx","version":"0.1.0","private":true,"type":"module","scripts":{"check":"node --check api/proxy.js && node --check sw.js"}}
