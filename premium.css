@@ -258,3 +258,6 @@ html:not([data-nav=fwd]) main>*,html:not([data-nav=fwd]) #hx>.sec,html:not([data
 .devc{text-align:center;margin:36px 0 12px;display:flex;flex-direction:column;align-items:center;gap:2px}
 .devc small{color:var(--m);font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:500}
 .devc b{font:400 36px/1.3 Pacifico,'Brush Script MT','Segoe Script',cursive;background:linear-gradient(90deg,var(--a),#a78bfa,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent;padding:0 6px}
+.px-ch{height:150px}.px-ch>div{cursor:pointer;-webkit-tap-highlight-color:transparent}.px-ch em{font-style:normal;font-size:10.5px;color:var(--m);line-height:1}
+.px-ch .sel i{outline:2px solid var(--a);outline-offset:1px}.px-ch .sel em,.px-ch .sel span{color:var(--t);font-weight:700}
+.px-wd{margin-top:12px;text-align:center;font-size:13px;font-weight:600;color:var(--a)}

@@ -22,7 +22,7 @@ function popup(){
 }
 // permanent banner on Home
 function banner(){
- if(standalone()||done())return;const m=$('#main');if(!m||document.querySelector('.ibn'))return;
+ if(standalone())return;const m=$('#main');if(!m||document.querySelector('.ibn'))return;
  const h=m.querySelectorAll('.chd');if(h.length<2)return;
  const b=document.createElement('button');b.className='ibn';b.type='button';
  b.innerHTML='<span class="ii"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-5-5m5 5 5-5M5 20h14"/></svg></span><span class="it"><b>Download the app</b><small>Install Spotify on your phone</small></span><span class="ia">Install</span>';
