@@ -71,3 +71,11 @@ Back navigation: forward vs Back is detected from stamped history entries; Back 
 Profile: stats card renders in the same frame as the header (no layout jump after paint).
 Radio: stations whose names start with 0-5 (2B ... 4 Lobos ... 5 Rivers, no logo) are hidden in Home sections and the Radio page.
 Verified with a headless Chromium smoke test using mocked providers; real devices and live APIs not tested.
+
+## v12 fixes
+Confirm popup for every ✕ / Remove all (Downloads, mini-player, Recently played, saved artists/albums). Removing one download keeps the current song playing; Remove all stops it only if it is a downloaded song.
+Queue: the ＋ button on every song/card opens Play next / Add to queue / Add to playlist (manual songs go before autoplay songs).
+Autoplay: when the queue ends (or shuffle with 1 song) it fetches similar songs (provider similar, then same artist/album search, then liked/downloaded) and keeps going; prefetched during the last song. Shuffle no longer repeats the current song.
+Offline: Home shows Downloaded songs instead of stale history; last good Trending is cached (`cl_home`) for provider failures; Home refreshes when back online. Service worker is now network-first for app files (cache only when offline/slow), `cl-v22`, auto-reload once after an update if nothing is playing.
+Icons: green gradient background with black waves (any + maskable + apple-touch). Reinstall the PWA once.
+Verified: `node --check` only.

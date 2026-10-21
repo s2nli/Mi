@@ -45,3 +45,4 @@ if(top&&!$('#npdl')){const b=document.createElement('button');b.id='npdl';b.type
 new MutationObserver(icon).observe($('#tt'),{childList:true});
 refresh();
 addEventListener('hashchange',refresh);
+CL.dlRefresh=refresh;

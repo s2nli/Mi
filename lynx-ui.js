@@ -34,7 +34,8 @@ for(const i of['#art','#npart'])$(i).addEventListener('error',e=>e.target.remove
 
 /* mini player: close (✕) button - stops playback and hides the bar until something plays again */
 (()=>{const nx=$('#nx');if(!nx||$('#bx'))return;const b=document.createElement('button');b.id='bx';b.title='Close player';b.setAttribute('aria-label','Close player');b.textContent='✕';nx.after(b);
-b.onclick=e=>{e.stopPropagation();try{au.pause();S.q=[];S.i=-1;au.removeAttribute('src');au.load()}catch{}try{localStorage.removeItem('cl_resume')}catch{}open(false);document.body.classList.add('nobar');set('#tt','Nothing playing');set('#ta','')};
+const stop=()=>{try{au.pause();S.q=[];S.i=-1;au.removeAttribute('src');au.load()}catch{}try{localStorage.removeItem('cl_resume')}catch{}open(false);document.body.classList.add('nobar');set('#tt','Nothing playing');set('#ta','')};CL.stopPlayer=stop;
+b.onclick=async e=>{e.stopPropagation();if(await CL.ask('Close the player?','Playback will stop and the queue will be cleared.','Close'))stop()};
 ['play','loadstart'].forEach(ev=>au.addEventListener(ev,()=>{if(S.q.length)document.body.classList.remove('nobar')}))})();
 
 /* phone/browser Back button closes the topmost layer: Now Playing, dialog, queue/lyrics panel, More sheet */

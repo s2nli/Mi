@@ -28,12 +28,12 @@ M.addEventListener('click',async e=>{const b=e.target.closest('[data-x],[data-r]
  else if(x==='cache'){await Promise.all((await caches.keys()).map(k=>caches.delete(k)));toast('Temporary cache cleared; offline files untouched')}
  else if(x==='export')exp();
  else if(x==='reset'){if(confirm('Reset preferences? Your library is kept.')){Object.keys(localStorage).filter(k=>k.startsWith('cl_')).forEach(k=>localStorage.removeItem(k));location.reload()}}
- else if(x==='off-clear'){if(confirm('Remove all offline files?')){await clr('offline');CL.route()}}
- else if(x==='local-clear'){if(confirm('Remove all imported local files?')){await clr('local');CL.route()}}
- else if(x?.startsWith('off:')){await del('offline',x.slice(4));CL.route()}});
+ else if(x==='off-clear'){if(await CL.ask('Remove all downloads?','Downloaded songs will be deleted from this device. A song that is playing now will stop.','Remove all')){const c=S.q[S.i];await clr('offline');CL.dlRefresh?.();if(c&&c.local&&String(c.streams?.[0]).startsWith('blob:'))CL.stopPlayer?.();CL.route()}}
+ else if(x==='local-clear'){if(await CL.ask('Remove all imported files?','','Remove all')){await clr('local');CL.route()}}
+ else if(x?.startsWith('off:')){const nm=b.closest('.row')?.querySelector('.i div')?.textContent||'';if(!await CL.ask('Remove this download?',nm,'Remove'))return;await del('offline',x.slice(4));CL.dlRefresh?.();CL.route();toast('Removed from Downloads')}});
 /* speed, resume, update notice */
 au.defaultPlaybackRate=au.playbackRate=lsj('cl_speed',1);
-try{const r=lsj('cl_resume',null);if(r?.q?.length&&r.q[r.i]?.streams?.[0]){S.q=r.q;S.i=r.i;CL.ui();au.src=S.q[S.i].streams[0];au.addEventListener('loadedmetadata',()=>{au.currentTime=r.t||0},{once:true})}}catch{}
+try{const r=lsj('cl_resume',null);if(r?.q?.length&&r.q[r.i]?.streams?.[0]&&!String(r.q[r.i].streams[0]).startsWith('blob:')&&navigator.onLine!==false){S.q=r.q;S.i=r.i;CL.ui();au.src=S.q[S.i].streams[0];au.addEventListener('loadedmetadata',()=>{au.currentTime=r.t||0},{once:true})}}catch{}
 setInterval(()=>{try{if(S.q.length&&!S.q.some(t=>t.local))localStorage.cl_resume=JSON.stringify({q:S.q.slice(0,200).map(strip),i:S.i,t:au.currentTime})}catch{}},3000);
 navigator.serviceWorker?.getRegistration().then(r=>r&&r.addEventListener('updatefound',()=>{const w=r.installing;w?.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)toast('Update ready: reload to apply')})}));
 if(V[(location.hash||'').slice(1)])CL.route();
