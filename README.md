@@ -59,3 +59,6 @@ Home: the search pill is gone (Search stays in the bottom nav and sidebar); in i
 Profile: **XP, level and rank** (1 XP per 10 s listened, +5 per finished song, daily streak bonus, +5 mood check-in; level = floor(sqrt(XP/40))+1; ranks Bronze to Legend), live **clock**, **listening stats** (today, week, all time, songs played, streak, peak hour, top artist, 7-day chart) and a **mood picker** that searches your enabled providers for that mood (adds your top artist when it fits the mood). All stats are local (`cl_stats`, `cl_mood`); there are no accounts, so rank is a tier, not a leaderboard.
 Fixes: Theme in Settings never persisted (the saved value was read with `JSON.parse` and silently fell back to dark); `sw.js` was empty, now caches the app shell for offline start; the blanket reduced-motion rule no longer overrides the Animation setting.
 Verified: `npm run check` and a headless-browser smoke test with mocked provider responses. Live provider APIs and real audio playback were not tested here.
+
+## v10
+Settings page removed (nav, profile row and gear button). Theme and accent now live in the Home theme sheet and the sleep timer on Home. Provider toggles, playback speed, storage limit, export/import and reset are no longer in the UI; defaults apply (all providers on, speed 1x).

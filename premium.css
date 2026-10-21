@@ -133,3 +133,11 @@ dialog .px-opts button.act{border-color:var(--a);background:color-mix(in srgb,va
 /* profile header follows the accent colour instead of the fixed brown */
 .pbg{background:linear-gradient(180deg,color-mix(in srgb,var(--a) 38%,var(--bg)),var(--bg))}
 dialog .px-sws button{justify-content:center}
+
+/* tiles have no icon any more: let the label use the full width */
+.bt b{max-width:100%;overflow-wrap:normal;word-break:normal;hyphens:none}
+
+/* no zoom: block pinch / double-tap zoom and the auto-zoom browsers do when a small input gets focus */
+html,body{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+input,select,textarea{font-size:16px!important}
+.sbox input{font-size:16px}
