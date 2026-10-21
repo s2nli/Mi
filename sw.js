@@ -1,5 +1,5 @@
 // CODΞLYNX service worker: app-shell cache so the UI opens offline. Audio, APIs and cross-origin requests are never cached here.
-const V='cl-v9',SHELL=['/','/premium.css','/premium.js','/ext.js','/lynx-ui.js','/manifest.webmanifest','/logo-96.png','/icon-192.png'];
+const V='cl-v14',SHELL=['/','/premium.css','/premium.js','/ext.js','/lynx-ui.js','/manifest.webmanifest','/logo-96.png','/icon-192.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.allSettled(SHELL.map(u=>c.add(u)))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x.startsWith('cl-v')&&x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{
