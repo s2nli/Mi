@@ -18,7 +18,7 @@ addEventListener('resize',()=>{if(!mobile())open(false)});
 /* bottom nav + More sheet */
 const more=$('#more'),list=$('#morelist');
 document.querySelectorAll('#bnav button[data-v]').forEach(b=>b.onclick=()=>{$('#panel').classList.remove('show');open(false);location.hash==='#'+b.dataset.v?CL.route():location.hash=b.dataset.v});
-$('#morebtn').onclick=()=>{list.innerHTML='';for(const b of $('#navx').children){const c=document.createElement('button');c.textContent=b.textContent;c.onclick=()=>{more.classList.remove('show');b.dataset.v?(location.hash=b.dataset.v):b.click()};list.append(c)}more.classList.add('show')};
+($('#morebtn')||{}).onclick=()=>{list.innerHTML='';for(const b of $('#navx').children){const c=document.createElement('button');c.textContent=b.textContent;c.onclick=()=>{more.classList.remove('show');b.dataset.v?(location.hash=b.dataset.v):b.click()};list.append(c)}more.classList.add('show')};
 more.onclick=e=>{if(e.target===more)more.classList.remove('show')};
 addEventListener('hashchange',()=>{$('#panel').classList.remove('show');more.classList.remove('show')});
 sync();prog();

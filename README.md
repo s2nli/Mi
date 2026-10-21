@@ -47,3 +47,9 @@ Header + sticky white search bar, category tiles (Music, Radio, Albums, Artists,
 
 ## v6: Spotify-style Library
 Header (search, new playlist), chips Playlists/Albums/Artists (tap again to clear), sort Recents/A–Z, list/grid toggle, Liked Songs pinned, playlists with 2x2 cover mosaic, saved artists/albums (localStorage `cl_lib`, found via jiosvvnn `/search/artists|albums`), Add artists / Add albums / Import your music (opens Local files), playlist page (play, shuffle, rename, delete, remove tracks), Recently played kept below. Podcasts/events not included. Verified: node --check only.
+
+## v7: Profile tab
+Bottom-nav "More" replaced by "Profile": editable display name (localStorage `cl_name`), counts (liked/playlists/saved) and links to Explore, Artists, Albums, Radio, Local files, Downloads, Settings, Install. Verified: node --check only.
+
+## v8: Spotify-style profile
+Bottom nav: Liked replaced by Downloads (Liked Songs stays in Library and Profile). Profile: banner header with photo + name, "0 followers • N following" (N = saved artists), Edit (photo from gallery resized to 256px, name), settings, ⋮ menu (Share, What others can see), Playlists with Manage page (remove/add playlists on profile), optional Recently played artists. Header avatars show the profile photo and open Profile. All data is local (localStorage `cl_name`, `cl_pic`, `cl_priv`, `cl_phide`); there are no accounts, so followers is always 0 and privacy toggles only change what this device shows. Verified: node --check only.
