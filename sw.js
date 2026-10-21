@@ -1,6 +1,6 @@
 // Spotify service worker: app-shell cache so the UI opens offline + persistent artwork cache.
 // Audio, APIs and other cross-origin requests are never cached here; only <img> artwork is.
-const V='cl-v23',IMG='cl-img-v1',MAXIMG=500,SHELL=['/','/premium.css','/premium.js','/ext.js','/spsearch.js','/dl.js','/install.js','/lynx-ui.js','/manifest.webmanifest','/logo-96.png','/icon-192.png'];
+const V='cl-v24',IMG='cl-img-v1',MAXIMG=500,SHELL=['/','/premium.css','/premium.js','/ext.js','/spsearch.js','/dl.js','/install.js','/lynx-ui.js','/manifest.webmanifest','/logo-96.png','/icon-192.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.allSettled(SHELL.map(u=>c.add(new Request(u,{cache:'reload'}))))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V&&x!==IMG).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 const net=(r,ms)=>Promise.race([fetch(r),new Promise((_,j)=>setTimeout(()=>j(new Error('slow')),ms))]);

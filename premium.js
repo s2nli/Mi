@@ -7,7 +7,7 @@ const raw=(k,d)=>LS.getItem(k)||d;
 const day=(d=new Date())=>new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
 const first=n=>String(n||'').split(/[,&]/)[0].trim();
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
-const hrs=s=>s<30?'0h':(s/3600).toFixed(1)+'h',wdText=(d,v)=>`${d.toLocaleDateString([],{weekday:'long',day:'numeric',month:'short'})} · ${fmtD(v)} · ${(v/3600).toFixed(2)} hours`;
+const mins=s=>Math.round(s/60),hrs=s=>{const m=mins(s);return m<1?'0m':m<60?m+'m':Math.floor(m/60)+'h'+String(m%60).padStart(2,'0')},wdText=(d,v)=>`${d.toLocaleDateString([],{weekday:'long',day:'numeric',month:'short'})} · ${mins(v)} min · ${(v/3600).toFixed(2)} hours`;
 const fmtD=s=>{s=Math.round(s);if(s<60)return s+'s';const m=Math.floor(s/60);if(m<60)return m+'m';return Math.floor(m/60)+'h '+String(m%60).padStart(2,'0')+'m'};
 const ic=d=>`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 
