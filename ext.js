@@ -1,8 +1,8 @@
 // CODΞLYNX extensions: Explore, Radio, Local files, Downloads, Settings, resume, sleep timer, speed.
 const CL=window.CL,{S,au,P,toast,esc,jget,put,del,all,tx,strip}=CL,$=s=>document.querySelector(s),V=CL.views;
 const lsj=(k,d)=>{try{return JSON.parse(localStorage[k])??d}catch{return d}},clr=s=>tx(s,'readwrite',o=>o.clear());
-document.head.insertAdjacentHTML('beforeend','<style>.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}.chip{background:var(--s2);border-radius:99px;padding:6px 14px;cursor:pointer}.card{background:var(--s);border-radius:12px;padding:14px;margin:12px 0}select,input[type=number]{background:var(--s2);color:var(--t);border:0;border-radius:8px;padding:8px}@media(max-width:800px){nav{overflow-x:auto}nav button{flex:none}}</style>');
-for(const[v,l]of[['explore','Explore'],['artists','Artists'],['albums','Albums'],['radio','Radio'],['local','Local'],['downloads','Downloads'],['settings','Settings']]){const b=document.createElement('button');b.dataset.v=v;b.textContent=l;b.onclick=()=>location.hash==='#'+v?CL.route():location.hash=v;$('#nav').append(b)}
+document.head.insertAdjacentHTML('beforeend','<style>.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}.chip{background:var(--s2);border-radius:99px;padding:6px 14px;cursor:pointer}.card{background:var(--s);border-radius:12px;padding:14px;margin:12px 0}select,input[type=number]{background:var(--s2);color:var(--t);border:0;border-radius:8px;padding:8px}</style>');
+for(const[v,l]of[['explore','Explore'],['artists','Artists'],['albums','Albums'],['radio','Radio'],['local','Local'],['downloads','Downloads'],['settings','Settings']]){const b=document.createElement('button');b.dataset.v=v;b.textContent=l;b.onclick=()=>location.hash==='#'+v?CL.route():location.hash=v;$('#navx').append(b)}
 P.radio={label:'Radio Browser'};P.local={label:'Local file'};
 /* Explore: shortcuts that run real searches (not charts) */
 V.explore=m=>{m.innerHTML='<h2>Explore</h2><p class="sub">Genre, mood and language shortcuts. Each one runs a live search on your enabled providers.</p><div class="chips">'+['Hindi hits','English pop','Punjabi','Lo-fi','Romance','Party','Workout','Devotional','Sufi','Rock','Indie','Retro 90s'].map(x=>`<button class="chip" data-g="${esc(x)}">${esc(x)}</button>`).join('')+'</div>'};
@@ -47,7 +47,7 @@ CL.altLyrics=async t=>{try{const s=await jget(`https://mobileservice.kugou.com/a
 /* Install button */
 let dp;const inst=()=>dp?dp.prompt():toast(/iphone|ipad/i.test(navigator.userAgent)?'Safari: Share, then Add to Home Screen':'Browser menu, then Install app or Add to Home screen');
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e});
-if(!matchMedia('(display-mode: standalone)').matches){const b=document.createElement('button');b.textContent='Install';b.onclick=inst;$('#nav').append(b);addEventListener('appinstalled',()=>b.remove())}
+if(!matchMedia('(display-mode: standalone)').matches){const b=document.createElement('button');b.textContent='Install';b.onclick=inst;$('#navx').append(b);addEventListener('appinstalled',()=>b.remove())}
 /* Theme, M3U export, install from Settings */
 const th=()=>{const t=lsj('cl_theme','dark');document.documentElement.dataset.theme=t==='system'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):t};th();
 const s0=V.settings;V.settings=m=>{s0(m);const t=lsj('cl_theme','dark');m.insertAdjacentHTML('beforeend',`<div class="card"><b>Appearance and app</b><p><label>Theme <select id="thm">${['dark','light','system'].map(x=>`<option ${x===t?'selected':''}>${x}</option>`).join('')}</select></label> <button data-x="m3u">Export playlists (M3U)</button> <button data-x="install">Install app</button></p><p class="sub">M3U lists the stream links known now; provider links can expire.</p></div>`)};
