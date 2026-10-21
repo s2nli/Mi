@@ -62,3 +62,12 @@ Verified: `npm run check` and a headless-browser smoke test with mocked provider
 
 ## v10
 Settings page removed (nav, profile row and gear button). Theme and accent now live in the Home theme sheet and the sleep timer on Home. Provider toggles, playback speed, storage limit, export/import and reset are no longer in the UI; defaults apply (all providers on, speed 1x).
+
+## v11 fixes
+Icons regenerated: transparent (any) and solid-black (maskable) Spotify logo, so the launch splash is the clean logo on full black (`background_color`/`theme_color` `#000000`) instead of a boxed PNG. Reinstall the PWA once to refresh the cached icon/splash.
+Artwork: no more `loading="lazy"` (it loaded late inside horizontal rails), fade-in, one retry on a failed cover, a service-worker artwork cache (`cl-img-v1`, 500 entries, CORS copies only) and a 10-minute in-memory cache in `jget` so Home rebuilds instantly when you come back.
+Library: Recently played has a remove (✕) per song and Clear all; Add artists/albums/Import icons are SVG (the placeholder note was drawn behind the plus) and no longer hidden by the Home chip filter (`data-k` clash).
+Back navigation: forward vs Back is detected from stamped history entries; Back restores scroll without replaying entrance animations; user touch/scroll cancels the restore; Profile and playlist back arrows use history.
+Profile: stats card renders in the same frame as the header (no layout jump after paint).
+Radio: stations whose names start with 0-5 (2B ... 4 Lobos ... 5 Rivers, no logo) are hidden in Home sections and the Radio page.
+Verified with a headless Chromium smoke test using mocked providers; real devices and live APIs not tested.

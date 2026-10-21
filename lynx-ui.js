@@ -56,18 +56,27 @@ $('#npclose').onclick=()=>{if(npPushed&&history.state?.lyr)history.back();else o
 })();
 
 /* back arrow on every secondary page + remember scroll position so Back returns to where you were */
-(()=>{const main=$('#main'),SEC=new Set(['explore','artists','albums','radio','local','downloads','liked']);
-const ys={};let key=location.hash||'#home',lock=false,popped=false,navs=0,tm;
+(()=>{const main=$('#main'),root=document.documentElement,SEC=new Set(['explore','artists','albums','radio','local','downloads','liked']);
+const ys={};let key=location.hash||'#home',lock=false,seq=0,navs=0,tm,ft;if(!history.state)history.replaceState({n:0},'');
 const sy=()=>window.scrollY||document.documentElement.scrollTop||0;
+/* entrance animations only on forward navigation (and first load); Back / in-place refreshes just show the page */
+const fwd=()=>{root.dataset.nav='fwd';clearTimeout(ft);ft=setTimeout(()=>{root.dataset.nav='still'},1200)};fwd();
+const unlock=()=>{if(!lock)return;lock=false;clearInterval(tm)};
+for(const ev of['touchstart','wheel','keydown'])addEventListener(ev,unlock,{passive:true});
 let raf=0;addEventListener('scroll',()=>{if(lock||raf)return;raf=requestAnimationFrame(()=>{raf=0;if(!lock)ys[key]=sy()})},{passive:true});
-addEventListener('popstate',()=>{popped=true});
-addEventListener('hashchange',()=>{const nk=location.hash||'#home';if(nk===key)return;lock=true;key=nk;navs++;const y=popped?(ys[nk]||0):0;popped=false;clearInterval(tm);let n=0;
- const go=()=>{n++;const ok=document.documentElement.scrollHeight>=y+innerHeight-2||y===0;if(ok||n>25){scrollTo(0,y);if(ok||n>25){clearInterval(tm);setTimeout(()=>{lock=false;ys[key]=sy()},150)}}};
- go();if(lock)tm=setInterval(go,120)});
+addEventListener('hashchange',()=>{const nk=location.hash||'#home';if(nk===key)return;
+ /* entries created by a forward hash change have no state yet; Back/Forward traversals land on stamped entries */
+ const hs=history.state,back=!!hs&&(hs.n!=null||!!hs.lyr);if(!hs)history.replaceState({n:++seq},'');
+ lock=true;key=nk;navs++;
+ if(back){root.dataset.nav='still';clearTimeout(ft)}else fwd();
+ const y=back?(ys[nk]||0):0;clearInterval(tm);let n=0,done=false;
+ const fin=()=>{done=true;clearInterval(tm);scrollTo(0,y);setTimeout(()=>{lock=false;ys[key]=sy()},150)};
+ const go=()=>{if(done)return;if(!lock){clearInterval(tm);return}n++;if(y===0||document.documentElement.scrollHeight>=y+innerHeight-2||n>25)fin()};
+ go();if(!done)tm=setInterval(go,120)});
 const bar=()=>{const v=(location.hash||'#home').slice(1).split('/')[0];if(!SEC.has(v)||main.querySelector(':scope>.xbar'))return;
  main.insertAdjacentHTML('afterbegin','<div class="xbar"><button class="sbtn2 xback" data-back aria-label="Back"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4M11 5l-7 7 7 7"/></svg></button></div>')};
 new MutationObserver(bar).observe(main,{childList:true});bar();
-document.addEventListener('click',e=>{if(!e.target.closest('[data-back]'))return;e.preventDefault();if(navs>0)history.back();else location.hash='home'},true);
+document.addEventListener('click',e=>{const b=e.target.closest('[data-back]');if(!b)return;e.preventDefault();if(navs>0)history.back();else location.hash=b.dataset.back||'home'},true);
 })();
 
 /* ============ Spotify-style Now Playing: tint, lyric line, cards, options sheet ============ */

@@ -59,7 +59,7 @@ const refLiked=async()=>{try{likedIds=new Set((await CL.all('liked')).map(x=>x.i
 const rec=()=>{try{return JSON.parse(localStorage.cl_rec||'[]')}catch{return[]}};
 const saveRec=a=>{try{localStorage.cl_rec=JSON.stringify(a.slice(0,30))}catch{}};
 const addRec=it=>{const k=x=>x.k+'|'+(x.k==='s'?x.t.id:x.k==='q'?x.q.toLowerCase():x.name);saveRec([it,...rec().filter(x=>k(x)!==k(it))])};
-const art=(u,rd,ic)=>`<div class="sp-a${rd?' rd':''}">${u?`<img src="${esc(u)}" alt="" loading="lazy" onerror="this.remove()">`:(ic||'♪')}</div>`;
+const art=(u,rd,ic)=>`<div class="sp-a${rd?' rd':''}">${u?`<img src="${esc(u)}" alt="" decoding="async" onerror="this.remove()">`:(ic||'♪')}</div>`;
 const lkBtn=t=>`<button data-sp="lk" data-id="${esc(t.id)}" aria-label="Like">${likedIds.has(t.id)?I.ok:I.add}</button>`;
 const songRow=(t,i,src)=>`<div class="sp-r" data-sp="play" data-src="${src}" data-i="${i}">${art(t.artwork)}<div class="sp-t"><b>${esc(t.title)}</b><span>Song • ${esc(t.artist)}</span></div><button data-sp="more" data-src="${src}" data-i="${i}" aria-label="More">${I.dots}</button>${lkBtn(t)}</div>`;
 const recSong=(t,i)=>`<div class="sp-r" data-sp="rplay" data-i="${i}">${art(t.artwork)}<div class="sp-t"><b>${esc(t.title)}</b><span>Song • ${esc(t.artist)}</span></div>${lkBtn(t)}<button data-sp="rx" data-i="${i}" aria-label="Remove">${I.x}</button></div>`;

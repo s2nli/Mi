@@ -248,3 +248,13 @@ main[data-f=a] .arl{display:grid;grid-template-columns:repeat(3,1fr);gap:20px 10
 #ipop .ipg{width:100%;height:50px;border-radius:99px;background:var(--a);color:#04130c;font-weight:700;font-size:16px}
 #ipop .ipn{width:100%;height:44px;border-radius:99px;color:var(--t);font-weight:600}
 #ipop .ipc{display:flex;align-items:center;gap:10px;color:var(--m);font-size:14px;margin-top:2px}#ipop .ipc input{width:18px;height:18px;accent-color:var(--a)}
+
+/* artwork fades in instead of popping; entrance animations only on forward navigation (Back / refresh show the page at once) */
+img[decoding=async]{animation:imgIn .22s ease both}@keyframes imgIn{from{opacity:0}to{opacity:1}}
+html:not([data-nav=fwd]) main>*,html:not([data-nav=fwd]) #hx>.sec,html:not([data-nav=fwd]) .px-prof>*{animation:none!important}
+.la svg{display:block;color:var(--m)}
+.la.ad{background-image:none!important}
+
+.devc{text-align:center;margin:36px 0 12px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.devc small{color:var(--m);font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:500}
+.devc b{font:400 36px/1.3 Pacifico,'Brush Script MT','Segoe Script',cursive;background:linear-gradient(90deg,var(--a),#a78bfa,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent;padding:0 6px}

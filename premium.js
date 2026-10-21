@@ -115,7 +115,7 @@ async function pickMood(id,fresh){const k=day();jset('cl_mood',{m:id,d:k});if(!S
 /* ---------- profile ---------- */
 function lastDays(n){const out=[];for(let i=n-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);out.push([d,ST.days[day(d)]||0])}return out}
 async function profile(m){const hd=$('.pbg',m);if(!hd||$('.px-prof',m))return;const box=document.createElement('div');box.className='px-prof';hd.after(box);
- const[lk,pl]=await Promise.all([all('liked').catch(()=>[]),all('playlists').catch(()=>[])]);if(!box.isConnected)return;
+ let lk,pl;const pc=CL.pcnt;if(pc){lk={length:pc.lk};pl={length:pc.pl}}else{[lk,pl]=await Promise.all([all('liked').catch(()=>[]),all('playlists').catch(()=>[])]);if(!box.isConnected)return}
  const i=info(),s=streak(),wk=lastDays(7),mx=Math.max(60,...wk.map(x=>x[1])),wsum=wk.reduce((a,x)=>a+x[1],0),ph=ST.hours.indexOf(Math.max(...ST.hours)),md=jget('cl_mood',null),mm=md&&md.d===day()?MOODS.find(x=>x[0]===md.m):null,ta=Object.entries(ST.artists).sort((a,b)=>b[1]-a[1])[0]?.[0];
  const st=(k,v,id)=>`<div class="px-st"><small>${k}</small><b${id?` data-live="${id}"`:''}>${esc(v)}</b></div>`;
  box.innerHTML=`<section class="px-card px-xp"><div class="px-ring" style="--p:${i.pct.toFixed(1)}"><b data-live="lvl">${i.l}</b><small>LEVEL</small></div><div class="px-xi"><div class="px-rk" data-live="rank">${i.rk[2]}</div><div class="px-tt" data-live="title">${esc(i.title)}</div><div class="px-xv"><b data-live="xp">${i.xp.toLocaleString()} XP</b></div><div class="px-bar"><i style="width:${i.pct.toFixed(1)}%"></i></div><div class="sub" data-live="next">${LIVE.next(i)}</div></div></section>`
