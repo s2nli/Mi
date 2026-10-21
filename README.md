@@ -44,3 +44,6 @@ Unverified: only `node --check` was run; the playlist endpoints are untested.
 
 ## v5: Spotify-browse style Search
 Header + sticky white search bar, category tiles (Music, Radio, Albums, Artists, Home of I-Pop, Made For You), "Discover something new" hashtag cards (artwork fetched lazily from jiosvvnn when it responds, gradient otherwise), 3-column colour genre grid (~57 tiles, each runs a search). Grid hides while a query is typed. Podcasts / Live Events / camera tiles not included (no source for them). Verified: node --check only.
+
+## v6: Spotify-style Library
+Header (search, new playlist), chips Playlists/Albums/Artists (tap again to clear), sort Recents/A–Z, list/grid toggle, Liked Songs pinned, playlists with 2x2 cover mosaic, saved artists/albums (localStorage `cl_lib`, found via jiosvvnn `/search/artists|albums`), Add artists / Add albums / Import your music (opens Local files), playlist page (play, shuffle, rename, delete, remove tracks), Recently played kept below. Podcasts/events not included. Verified: node --check only.
