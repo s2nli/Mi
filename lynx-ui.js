@@ -26,3 +26,6 @@ sync();prog();
 /* home: navigation tiles, artist search, keyboard activation */
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){location.hash=g.dataset.go;return}const s=e.target.closest('[data-sq]');if(s){sessionStorage.cl_q=s.dataset.sq;location.hash==='#search'?CL.route():location.hash='search';return}const f=e.target.closest('[data-f]');if(f)$('#main').dataset.f=f.dataset.f});
 $('#main').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[role=button]')){e.preventDefault();e.target.click()}});
+
+/* hide broken artwork instead of showing the broken-image icon */
+for(const i of['#art','#npart'])$(i).addEventListener('error',e=>e.target.removeAttribute('src'));
