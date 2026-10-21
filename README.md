@@ -41,3 +41,6 @@ Still not built: equalizer/visualizer/crossfade, podcasts, swipe full-screen pla
 ## v4 additions (saaz-next home layout)
 Header search pill + sleep-timer and radio buttons; Trending Now with language chips (Hindi/English/Punjabi/Tamil/Telugu/Bhojpuri/Marathi/Bengali, via search `<lang> latest songs`); mood chips (All Music, Romantic, Dance, Sad, Party, Classical, Rock, Pop, Hip Hop, Latest) that filter home sections; sections English Hits, Hip Hop, Punjabi Beats, Romantic, Lofi & Chill, Party Anthems, 90s Classics; Charts & Playlists (jiosvvnn `/search/playlists`, tap loads `/playlists?id=`, falls back to a name search; follower count shown only if the API returns it); New Releases 2-column album grid; heart/＋/play buttons on every card; Liked tab in the bottom nav.
 Unverified: only `node --check` was run; the playlist endpoints are untested.
+
+## v5: Spotify-browse style Search
+Header + sticky white search bar, category tiles (Music, Radio, Albums, Artists, Home of I-Pop, Made For You), "Discover something new" hashtag cards (artwork fetched lazily from jiosvvnn when it responds, gradient otherwise), 3-column colour genre grid (~57 tiles, each runs a search). Grid hides while a query is typed. Podcasts / Live Events / camera tiles not included (no source for them). Verified: node --check only.

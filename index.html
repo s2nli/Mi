@@ -76,6 +76,15 @@ main:not([data-f=all]):not([data-f=s]) .mc{display:none}
 .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(44vw,190px),1fr));gap:14px}.gg .tc{width:auto}
 .pc{flex:none;width:min(78vw,300px);display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--bd);background:var(--s2);border-radius:14px;cursor:pointer;scroll-snap-align:start}.pa{width:64px;height:64px;border-radius:10px;overflow:hidden;flex:none;background:var(--s)}.pa img{width:100%;height:100%;object-fit:cover}.pt{min-width:0}.pt b,.pt span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pt span{color:var(--m);font-size:13px}
 #hx .sec[hidden]{display:none!important}
+
+/* spotify-style search v5 */
+.sh{display:flex;align-items:center;gap:12px;margin-bottom:10px}.sh h1{font-size:26px;margin:0;letter-spacing:-.02em}
+.sb2{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 16px 12px;margin:0 -16px 8px}
+.sbox{display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;background:#fff;color:#121212;border-radius:8px}.sbox svg{flex:none}.sbox input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:600 16px Inter,system-ui,sans-serif;color:#121212;height:100%}.sbox input::placeholder{color:#555}
+.bg3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}.bt{position:relative;overflow:hidden;aspect-ratio:1.4;border-radius:8px;padding:12px;cursor:pointer;color:#fff}.bt:active{transform:scale(.97)}.bt b{display:block;font-size:16px;line-height:1.2;max-width:72%;overflow-wrap:anywhere;font-weight:700}.bt i{position:absolute;right:-12px;bottom:-4px;width:58%;aspect-ratio:1;display:grid;place-items:center;font-style:normal;font-size:30px;background:rgba(0,0,0,.22);border-radius:6px;transform:rotate(25deg);box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.dh{margin:4px 0 14px;font-size:22px}.dc{flex:none;width:min(62vw,250px);aspect-ratio:2/3;border-radius:12px;position:relative;overflow:hidden;background-size:cover;background-position:center;cursor:pointer;scroll-snap-align:start;color:#fff;display:flex;align-items:flex-end;padding:14px}.dc b{font-size:17px}.dcw{margin-bottom:24px}
+@media(min-width:900px){.bg3{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}.sb2{margin:0 -32px;padding:8px 32px 12px}}
+#browse[hidden]{display:none}
 </style></head><body>
 <div id="app"><aside id="side"><div class="brand"><img src="/logo-96.png" alt="" width="30" height="30">CODΞLYNX</div><nav id="nav"><button data-v="home">Home</button><button data-v="search">Search</button><button data-v="liked">Liked</button><button data-v="library">Library</button></nav><div id="navx"></div></aside><main id="main"></main></div>
 <div id="bnav"><button data-v="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>Home</button><button data-v="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Search</button><button data-v="liked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>Liked</button><button data-v="library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16M9 4v16M14 6l5 14"/></svg>Library</button><button id="morebtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>More</button></div>
@@ -154,6 +163,78 @@ async function toggleLike(t){if(liked.has(t.id)){liked.delete(t.id);await del('l
 let view='home',list=[];
 const row=(t,i)=>`<div class="row"><div class="ph" style="${t.artwork?'':''}">${t.artwork?`<img src="${esc(t.artwork)}" alt="" loading="lazy">`:''}</div><div class="i" data-a="play" data-i="${i}"><div>${esc(t.title)}</div><div class="sub">${esc(t.artist)}${t.album?' · '+esc(t.album):''} <span class="tag">${esc(P[t.provider]?.label||t.provider)}</span>${t.preview?' <span class="tag">preview</span>':''}</div></div><button data-a="like" data-i="${i}" title="Like">${liked.has(t.id)?'♥':'♡'}</button><button data-a="next" data-i="${i}" title="Play next">⏭</button><button data-a="pl" data-i="${i}" title="Add to playlist">＋</button>${t.dl||t.streams[0]?`<button data-a="dl" data-i="${i}" title="Download">↓</button>`:''}</div>`;
 const rows=l=>{list=l;return l.length?l.map(row).join(''):'<div class="empty">Nothing here yet.</div>'};
+
+/* ---------- search view (Spotify-browse style) ---------- */
+const TOP=[['Music','top hindi songs','#dc148c','🎵'],['Radio','#radio','#e13300','📻'],['Albums','#albums','#8d67ab','💿'],['Artists','#artists','#1e3264','🎤'],['Home of I-Pop','indian pop songs','#1e3264','🟢'],['Made For You','#liked','#8d67ab','💜']];
+const DISC=[['#hindi pop','hindi pop songs','#7c2d12','#1c1917'],['#bollywood lofi','bollywood lofi','#7e22ce','#1e1b4b'],['#heartbreak','hindi heartbreak songs','#44403c','#0c0a09'],['#punjabi vibes','punjabi hits','#b45309','#431407'],['#retro bollywood','retro bollywood classics','#9f1239','#1c0a12'],['#gym beats','hindi workout songs','#166534','#052e16'],['#desi hip hop','desi hip hop','#1d4ed8','#0f172a'],['#sufi','sufi songs','#0f766e','#042f2e']];
+const GEN=`Upcoming Releases|upcoming hindi songs|#006450|⏳
+New Releases|new hindi songs|#608108|🆕
+Rain & Monsoon|hindi rain songs|#0d73ec|🌧️
+Hindi|hindi hits|#dc148c|🎬
+Tamil|tamil hits|#ba5d07|🎞️
+Punjabi|punjabi hits|#af2896|🥁
+Charts|top hindi songs chart|#8d67ab|📈
+Telugu|telugu hits|#bc5900|🎬
+Malayalam|malayalam hits|#477d95|🌴
+Haryanvi|haryanvi songs|#e13300|🎙️
+Bhojpuri|bhojpuri hits|#e13300|🎺
+Marathi|marathi songs|#148a08|🪘
+Bengali|bengali songs|#1e3264|🎶
+Summer|summer hits|#27856a|🍦
+Ghazals|ghazal songs|#777777|🌙
+Discover|new music discover|#8d67ab|🧭
+Fresh Finds|fresh new music|#ff0090|✨
+Pop|pop hits|#477d95|🎤
+Indie|indie music|#e8115b|🎸
+Love|love songs|#dc148c|💞
+Sleep|sleep music|#1e3264|😴
+Trending|trending songs|#af2896|🔥
+Mood|mood booster songs|#e61e8c|😊
+Party|party songs|#8d67ab|🪩
+Devotional|devotional bhajan|#a56752|🙏
+Decades|90s hits|#a56752|📼
+Hip-Hop|hip hop rap|#477d95|🎧
+Dance/Electronic|dance electronic|#477d95|💃
+Student|study music|#af2896|🎓
+Chill|chill songs|#ba5d07|🧊
+Gaming|gaming music|#e8115b|🎮
+K-pop|kpop hits|#e91429|🇰🇷
+Workout|workout songs|#777777|💪
+Rock|rock hits|#006450|🤘
+Indian Classical|indian classical|#8c4a2f|🎻
+Instrumental|instrumental music|#537aa1|🎹
+R&B|rnb hits|#ba5d07|🎷
+Metal|metal music|#e91429|🤟
+Jazz|jazz music|#8d67ab|🎺
+Classical|classical music|#7d4b32|🎼
+Folk & Acoustic|folk acoustic|#bc5900|🪕
+Focus|focus music|#a56752|🎯
+Soul|soul music|#e61e8c|💫
+Kids & Family|kids songs|#0d73ec|🧒
+Anime|anime songs|#0d73ec|🌸
+TV & Movies|movie soundtrack|#148a08|🍿
+Punk|punk rock|#e22134|⚡
+Ambient|ambient music|#148a08|🌫️
+Blues|blues music|#0d73ec|🎸
+Cooking & Dining|cooking music|#bc5900|🍳
+Alternative|alternative music|#e13300|🌀
+Wellness|wellness music|#148a08|🧘
+Travel|travel songs|#0d73ec|🚗
+Caribbean|caribbean music|#0d73ec|🏝️
+Afro|afrobeats|#8c1932|🥁
+Songwriters|songwriter acoustic|#8c1932|✍️
+Nature & Noise|nature sounds|#477d95|🌿
+Funk & Disco|funk disco|#af2896|🕺
+Netflix|netflix songs|#e22134|📺`.split('\n').map(l=>l.split('|'));
+function searchView(m){
+ const tile=([t,q,c,e])=>`<div class="bt" style="background:${c}" tabindex="0" role="button" ${q[0]==='#'?`data-go="${esc(q.slice(1))}"`:`data-sq="${esc(q)}"`}><b>${esc(t)}</b><i>${e}</i></div>`;
+ m.innerHTML=`<div class="sh"><img class="av" src="/logo-96.png" alt=""><h1>Search</h1></div><div class="sb2"><label class="sbox"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="q" type="search" placeholder="What do you want to listen to?" aria-label="Search" autocomplete="off"></label></div><div id="browse"><div class="bg3">${TOP.map(tile).join('')}</div><h2 class="dh">Discover something new</h2><div class="rail dcw">${DISC.map(([t,q,a,b])=>`<div class="dc" style="background-image:linear-gradient(160deg,${a},${b})" tabindex="0" role="button" data-sq="${esc(q)}"><b>${esc(t)}</b></div>`).join('')}</div><div class="bg3">${GEN.map(tile).join('')}</div></div><div id="res"></div>`;
+ const q=$('#q'),br=$('#browse');let tm;
+ const go=async()=>{const v=q.value.trim();br.hidden=!!v;if(!v){$('#res').innerHTML='';return}$('#res').innerHTML='<div class="sk" style="height:56px;margin:8px 0"></div>'.repeat(5);const r=await searchAll(v);if(q.value.trim()!==v)return;$('#res').innerHTML=(r.bad.length?`<p class="sub">No response from: ${esc(r.bad.join(', '))}</p>`:'')+rows(r.list)};
+ q.oninput=()=>{clearTimeout(tm);tm=setTimeout(go,400)};q.onkeydown=e=>e.key==='Enter'&&go();
+ if(sessionStorage.cl_q){q.value=sessionStorage.cl_q;sessionStorage.removeItem('cl_q');go()}
+ const io2=new IntersectionObserver(es=>es.forEach(async e=>{if(!e.isIntersecting)return;io2.unobserve(e.target);try{const l=await P.jiosvvnn.search(e.target.dataset.sq),a=l.find(x=>x.artwork)?.artwork;if(a)e.target.style.backgroundImage=`linear-gradient(transparent 45%,rgba(0,0,0,.8)),url("${a.replace(/"/g,'%22')}")`}catch{}}),{rootMargin:'300px'});
+ m.querySelectorAll('.dc').forEach(d=>io2.observe(d))}
 async function route(){view=(location.hash||'#home').slice(1).split('/')[0];document.querySelectorAll('#nav button,#bnav button[data-v],#navx button').forEach(b=>b.classList.toggle('act',b.dataset.v===view));const m=$('#main');
  if(view==='home'){const hr=new Date().getHours(),g=hr<5?'Good night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
  const[hh,lk,pls]=await Promise.all([all('history').catch(()=>[]),all('liked').catch(()=>[]),all('playlists').catch(()=>[])]);if(view!=='home')return;
@@ -189,7 +270,7 @@ async function route(){view=(location.hash||'#home').slice(1).split('/')[0];docu
  ar.slice(0,2).forEach(([n,a])=>lazy(`<div class="ml"><img src="${esc(a)}" alt=""><div><span>More like</span><h2>${esc(n)}</h2></div></div>`,n));
  lazy('<h2>New releases for you</h2>','new hindi songs '+new Date().getFullYear(),null,'s',0,'latest');lazy('<h2>Charts &amp; Playlists</h2>','',plsf,'s');lazy('<h2>New Releases</h2>','',alb(String(new Date().getFullYear())),'al',1,'latest');lazy('<h2>Recommended stations</h2>','',stn('bylanguage/hindi'),'r');lazy('<h2>Popular radio</h2>','',stn('topvote/30'),'r');lazy('<h2>India radio</h2>','',stn('bycountry/India'),'r');lazy('<h2>Popular albums and singles</h2>','',alb('bollywood hits'),'al');ar[0]&&lazy('<h2>Albums featuring songs you like</h2>','',alb(ar[0][0]),'al');
  [['Happy','hindi happy songs'],['Workout','workout songs']].forEach(([t,q])=>lazy(`<h2>${t}</h2>`,q))}
- else if(view==='search'){m.innerHTML='<input class="search" id="q" placeholder="Search songs, artists…" aria-label="Search" autofocus><div id="res"></div>';const q=$('#q');let tm;const go=async()=>{const v=q.value.trim();if(!v)return;$('#res').innerHTML='<div class="sk" style="height:56px;margin:8px 0"></div>'.repeat(5);const r=await searchAll(v);$('#res').innerHTML=(r.bad.length?`<p class="sub">No response from: ${esc(r.bad.join(', '))}</p>`:'')+rows(r.list)};q.oninput=()=>{clearTimeout(tm);tm=setTimeout(go,400)};q.onkeydown=e=>e.key==='Enter'&&go();if(sessionStorage.cl_q){q.value=sessionStorage.cl_q;sessionStorage.removeItem('cl_q');go()}}
+ else if(view==='search')searchView(m);
  else if(view==='library'){const[l,p,h]=await Promise.all([all('liked'),all('playlists'),all('history')]);const hs=h.sort((a,b)=>b.at-a.at).slice(0,30).map(x=>x.track);m.innerHTML=`<h2>Liked Songs</h2>${rows(l.map(x=>x.track))}<h2>Playlists <button data-a="newpl">＋ New</button></h2>${p.map(x=>`<details><summary>${esc(x.name)} (${x.tracks.length}) <button data-a="delpl" data-id="${esc(x.id)}">Delete</button></summary><div class="plr" data-id="${esc(x.id)}"></div></details>`).join('')||'<p class="sub">No playlists yet.</p>'}<h2>Recently played</h2>${rows(hs)}`;
   m.dataset.pl=JSON.stringify(p);m._lists={liked:l.map(x=>x.track),hist:hs};document.querySelectorAll('.plr').forEach(d=>{const pl=p.find(x=>x.id===d.dataset.id);d.innerHTML=pl.tracks.map(t=>`<div class="row"><div class="i" data-a="playpl" data-id="${esc(pl.id)}" data-tid="${esc(t.id)}"><div>${esc(t.title)}</div><div class="sub">${esc(t.artist)}</div></div><button data-a="rmpl" data-id="${esc(pl.id)}" data-tid="${esc(t.id)}">✕</button></div>`).join('')||'<p class="sub">Empty.</p>'})}
  else if(view==='liked'){const l=await all('liked');m.innerHTML='<h2>Liked Songs</h2>'+rows(l.map(x=>x.track))}
