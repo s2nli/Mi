@@ -1,4 +1,4 @@
-// CODΞLYNX shell: mini-player progress, full-screen Now Playing, mobile nav + "More" sheet.
+// Spotify shell: mini-player progress, full-screen Now Playing, mobile nav + "More" sheet.
 const $=s=>document.querySelector(s),{au,S}=window.CL,fmt=s=>isFinite(s)&&s>0?Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'):'0:00';
 const mobile=()=>!matchMedia('(min-width:900px)').matches,np=$('#np');
 document.body.insertAdjacentHTML('beforeend','<div id="npsheet"><div class="shbd" data-sh="x"></div><div class="shp" role="dialog" aria-label="Track options"></div></div>');
@@ -110,7 +110,7 @@ sheet.addEventListener('click',e=>{const b=e.target.closest('[data-sh]');if(!b)r
  else if(k==='pl')CL.pick(t);
  else if(k==='q'){open(false);$('#ql').click()}
  else if(k==='al'||k.startsWith('ar')){const q=k==='al'?t.album:split(t.artist)[+k.slice(2)];open(false);sessionStorage.cl_q=q;location.hash==='#search'?CL.route():location.hash='search'}
- else if(k==='dl'){if(t.dl&&CL.download)CL.download(t);else{const a=document.createElement('a');a.href=t.dl||t.streams[0];a.download=(t.artist+' - '+t.title)+'.mp3';a.target='_blank';a.rel='noopener';a.click()}}
+ else if(k==='dl'){if(CL.download)CL.download(t);else{const a=document.createElement('a');a.href=t.dl||t.streams[0];a.download=(t.artist+' - '+t.title)+'.mp3';a.target='_blank';a.rel='noopener';a.click()}}
  else if(k==='rep'){$('#rp').click();CL.toast('Repeat: '+(S.rep==='one'?'One':S.rep==='all'?'All':'Off'))}
  else if(k==='tm')slp()});
 function slp(){const b=document.createElement('button');b.dataset.a='slp';b.hidden=true;$('#main').append(b);b.click();b.remove()}

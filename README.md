@@ -1,4 +1,4 @@
-# CODΞLYNX (core build)
+# Spotify (core build)
 Static PWA + one Vercel function. No build step, no dependencies. Deploy: `vercel --prod` (or any static host + `api/proxy.js`).
 Run the syntax checks with `npm run check`. Env vars: none required (`.env.example` lists optional Supabase names, unused).
 

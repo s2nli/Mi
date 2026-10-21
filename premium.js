@@ -1,4 +1,4 @@
-// CODΞLYNX premium layer: theme + accent, motion, network status, XP / level / rank, clock + listening stats, mood picks.
+// Spotify premium layer: theme + accent, motion, network status, XP / level / rank, clock + listening stats, mood picks.
 const CL=window.CL,{au,toast,esc,all}=CL,$=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const root=document.documentElement,LS=localStorage;
 const jget=(k,d)=>{try{const v=LS.getItem(k);return v==null?d:JSON.parse(v)}catch{return d}};
