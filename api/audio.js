@@ -6,7 +6,7 @@ const allowed=u=>u.protocol==='https:'&&!u.username&&!u.password&&!u.port&&OK.so
 export default async function handler(req,res){
   res.setHeader('x-content-type-options','nosniff');
   const ip=String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||'x',now=Date.now(),h=(hits.get(ip)||[]).filter(t=>now-t<60000);
-  if(h.length>=20)return res.status(429).json({error:'rate limited'});h.push(now);hits.set(ip,h);if(hits.size>5000)hits.clear();
+  if(h.length>=60)return res.status(429).json({error:'rate limited'});h.push(now);hits.set(ip,h);if(hits.size>5000)hits.clear();
   try{
     const raw=String(req.query.u||'');if(!raw||raw.length>2000)return res.status(400).json({error:'bad url'});
     let u=new URL(raw),r;
