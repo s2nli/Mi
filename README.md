@@ -79,3 +79,13 @@ Autoplay: when the queue ends (or shuffle with 1 song) it fetches similar songs 
 Offline: Home shows Downloaded songs instead of stale history; last good Trending is cached (`cl_home`) for provider failures; Home refreshes when back online. Service worker is now network-first for app files (cache only when offline/slow), `cl-v22`, auto-reload once after an update if nothing is playing.
 Icons: green gradient background with black waves (any + maskable + apple-touch). Reinstall the PWA once.
 Verified: `node --check` only.
+
+## v13 fixes (playback + artwork reliability)
+Playback: a failed song is no longer skipped on the first error. Order now: quiet retry of the same link (resumes at the same second) → next bitrate → re-lookup of the song for a fresh stream link (fixes old/recent/liked/resumed songs whose saved links expired) → same song from another provider → only then skip. 15 s load watchdog and 15 s mid-song stall watchdog. A stream that ends far earlier than the song length (30 s preview / cut-off) switches to another source and continues from that point. After 3 failed songs in a row playback stops with a message instead of skipping the whole queue; when offline it waits and resumes on reconnect.
+Artwork/logo: failed images are retried 3 times (and again when back online / app returns to foreground) before being hidden; the service worker serves logos/icons cache-first (`cl-v25`) and retries cover art once, remembering hosts that block CORS.
+Verified: `node --check` on every script. Real playback / live providers not tested here.
+
+## v13.1 (self-audit)
+Tested in headless Chromium with mocked providers: home + all 11 views load with no JS errors; bad/expired link -> re-lookup -> same song plays; one-off error -> quiet retry; 3 dead songs in a row -> stops instead of skipping the queue; preview/short stream -> switches source; natural end -> next track; offline reload shows the app shell + logo from cache.
+Fixes from the audit: image retries now add `?_r=N` (the browser otherwise remembers a failed image URL and never asks the network again); `/api/proxy` rate limit 60 -> 300 per minute and `/api/audio` 20 -> 60 (a burst of Home requests could hit 429 and look like "nothing loads"); removed stray empty file `api/st`.
+Not testable here: real provider APIs and real devices.

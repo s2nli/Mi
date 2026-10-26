@@ -33,7 +33,7 @@ M.addEventListener('click',async e=>{const b=e.target.closest('[data-x],[data-r]
  else if(x?.startsWith('off:')){const nm=b.closest('.row')?.querySelector('.i div')?.textContent||'';if(!await CL.ask('Remove this download?',nm,'Remove'))return;await del('offline',x.slice(4));CL.dlRefresh?.();CL.route();toast('Removed from Downloads')}});
 /* speed, resume, update notice */
 au.defaultPlaybackRate=au.playbackRate=lsj('cl_speed',1);
-try{const r=lsj('cl_resume',null);if(r?.q?.length&&r.q[r.i]?.streams?.[0]&&!String(r.q[r.i].streams[0]).startsWith('blob:')&&navigator.onLine!==false){S.q=r.q;S.i=r.i;CL.ui();au.src=S.q[S.i].streams[0];au.addEventListener('loadedmetadata',()=>{au.currentTime=r.t||0},{once:true})}}catch{}
+try{const r=lsj('cl_resume',null);if(r?.q?.length&&r.q[r.i]?.streams?.[0]&&!String(r.q[r.i].streams[0]).startsWith('blob:')&&navigator.onLine!==false){S.q=r.q;S.i=r.i;CL.ui();S.seek=r.t||0;au.src=S.q[S.i].streams[0];au.addEventListener('loadedmetadata',()=>{au.currentTime=r.t||0;S.seek=0},{once:true})}}catch{}
 setInterval(()=>{try{if(S.q.length&&!S.q.some(t=>t.local))localStorage.cl_resume=JSON.stringify({q:S.q.slice(0,200).map(strip),i:S.i,t:au.currentTime})}catch{}},3000);
 navigator.serviceWorker?.getRegistration().then(r=>r&&r.addEventListener('updatefound',()=>{const w=r.installing;w?.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)toast('Update ready: reload to apply')})}));
 if(V[(location.hash||'').slice(1)])CL.route();

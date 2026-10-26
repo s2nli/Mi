@@ -144,7 +144,7 @@ let liked=new Set();all('liked').then(a=>{liked=new Set(a.map(x=>x.id))}).catch(
 /* ---------- providers ---------- */
 async function jraw(url,t){for(const u of [url,'/api/proxy?u='+enc(url)]){try{const c=new AbortController(),id=setTimeout(()=>c.abort(),t);const r=await fetch(u,{signal:c.signal});clearTimeout(id);if(r.ok)return await r.json()}catch{}}throw new Error('request failed: '+new URL(url).hostname)}
 const JC=new Map();
-function jget(url,t=9000){const h=JC.get(url);if(h&&Date.now()-h.t<6e5)return h.p;const p=jraw(url,t);JC.set(url,{t:Date.now(),p});p.catch(()=>{if(JC.get(url)?.p===p)JC.delete(url)});if(JC.size>300)JC.delete(JC.keys().next().value);return p}
+function jget(url,t=9000){const h=JC.get(url);if(h&&!jget.nc&&Date.now()-h.t<6e5)return h.p;const p=jraw(url,t);JC.set(url,{t:Date.now(),p});p.catch(()=>{if(JC.get(url)?.p===p)JC.delete(url)});if(JC.size>300)JC.delete(JC.keys().next().value);return p}
 const arr=d=>d?.data?.results||d?.results||d?.songs||d?.data?.songs||d?.items||(Array.isArray(d?.data)?d.data:Array.isArray(d)?d:[]);
 const fixImg=u=>{u=String(u||'').trim();return u.startsWith('//')?'https:'+u:u.startsWith('/')?K+u:u.replace(/^http:/,'https:')};
 const pickImg=a=>fixImg(Array.isArray(a)?(a.at(-1)?.url||a.at(-1)?.link||''):(typeof a==='string'?a:''));
@@ -165,7 +165,7 @@ const P={
 };
 const key=t=>t.title.toLowerCase().replace(/\(.*?\)|\[.*?\]/g,'').replace(/[^\p{L}\p{N}]+/g,' ').trim()+'|'+t.artist.toLowerCase().split(/[,&]/)[0].trim();
 const off=()=>{try{return JSON.parse(localStorage.cl_off||'[]')}catch{return[]}};
-async function fan(fn){const bad=[],groups=await Promise.all(Object.entries(P).filter(([n,p])=>p[fn]&&!off().includes(n)).map(async([n,p])=>{try{return await p[fn](...fan.args)}catch{bad.push(p.label);return[]}}));const m=new Map();for(const t of groups.flat()){if(!t.title||!t.streams.length&&!t.dl)continue;t.id=t.provider+':'+t.raw;const k=key(t),h=m.get(k);if(h)(h.alts??=[]).push(t);else m.set(k,t)}return{list:[...m.values()],bad}}
+async function fan(fn){const bad=[],groups=await Promise.all(Object.entries(P).filter(([n,p])=>p[fn]&&!off().includes(n)).map(async([n,p])=>{try{return await p[fn](...fan.args)}catch{bad.push(p.label);return[]}}));const m=new Map();for(const t of groups.flat()){if(!t.title||!t.streams.length&&!t.dl)continue;t.id=t.provider+':'+t.raw;t._ts=Date.now();const k=key(t),h=m.get(k);if(h)(h.alts??=[]).push(t);else m.set(k,t)}return{list:[...m.values()],bad}}
 const searchAll=async q=>{fan.args=[q];return fan('search')};const trending=async()=>{fan.args=[];return fan('trending')};
 async function similar(t){const p=P[t.provider];if(p?.similar)try{return await p.similar(t)}catch{}return[]}
 /* ---------- lyrics (LRCLIB) ---------- */
@@ -175,9 +175,9 @@ async function lyrics(t){const r=await jget(`https://lrclib.net/api/search?q=${e
 const au=new Audio();au.preload='auto';au.volume=.8;
 const S={q:[],i:-1,shuf:false,rep:'off',si:0};
 const cur=()=>S.q[S.i];
-function setSrc(){const t=cur();if(!t)return;au.src=t.streams[S.si]||t.dl;au.play().catch(()=>{})}
+function setSrc(){const t=cur();if(!t)return;const u=t.streams[S.si]||t.dl;if(!u)return fail('nosrc');au.src=u;const sk=S.seek;if(sk)au.addEventListener('loadedmetadata',()=>{try{au.currentTime=sk}catch{}if(S.seek===sk)S.seek=0},{once:true});clearTimeout(S.wd);if(!t.local)S.wd=setTimeout(()=>fail('timeout'),15000);au.play().catch(()=>{})}
 function play(list,i){S.q=list.slice();S.i=i;S.si=0;load()}
-function load(){const t=cur();if(!t)return;S.si=0;setSrc();ui();prefetchAP();if(!t.local)put('history',{id:t.id,at:Date.now(),track:strip(t)});navigator.mediaSession&&(navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist,album:t.album,artwork:t.artwork?[{src:t.artwork}]:[]}))}
+function load(){const t=cur();if(!t)return;S.si=0;S.fe=0;S.rf=0;S.seek=0;clearTimeout(S.ww);setSrc();ui();prefetchAP();if(!t.local)put('history',{id:t.id,at:Date.now(),track:strip(t)});navigator.mediaSession&&(navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist,album:t.album,artwork:t.artwork?[{src:t.artwork}]:[]}))}
 const strip=t=>({...t,alts:undefined});
 function next(auto){if(!S.q.length)return;if(auto&&S.rep==='one'){au.currentTime=0;au.play();return}let n=S.i+1;if(S.shuf&&S.q.length>1){do n=Math.floor(Math.random()*S.q.length);while(n===S.i)}if(n>=S.q.length){if(S.rep==='all')n=0;else return autoplay()}S.i=n;load()}
 /* autoplay: when the queue runs out, keep going with random songs of the same kind (same artist / album / provider "similar", then liked or downloaded songs) */
@@ -199,8 +199,39 @@ async function apFetch(t){
 function prefetchAP(){const t=cur();if(!t||t.live||S.i<S.q.length-1)return;if(S.ap&&S.ap.id===t.id)return;S.ap={id:t.id,p:apFetch(t).catch(()=>[])}}
 async function autoplay(){const t=cur();if(!t||t.live||S.apb)return;S.apb=1;try{const p=S.ap&&S.ap.id===t.id?S.ap.p:apFetch(t);toast('Finding similar songs…');const s=await p;S.ap=null;if(cur()!==t)return;if(s.length){S.q.push(...s);S.i++;load();toast('Autoplay: similar songs')}else toast('No similar songs found')}finally{S.apb=0}}
 function prev(){if(au.currentTime>3){au.currentTime=0;return}S.i=Math.max(0,S.i-1);load()}
-au.onended=()=>next(true);
-au.onerror=()=>{if(window.CL?.eqProbe)return;const t=cur();if(!t)return;if(t.streams[S.si+1]){S.si++;return setSrc()}const a=t.alts?.shift();if(a){toast('Trying '+P[a.provider].label);t.streams=a.streams;t.dl=a.dl||t.dl;S.si=0;return setSrc()}toast('Track unavailable, skipping');next(false)};
+/* ---- reliable playback: retry, fresh stream URL, other provider, and only then skip ---- */
+async function refresh(t){ /* old/saved songs: their stream links can expire, so look the song up again */
+ if(!t||t.local||t.live||String(t.id).startsWith('radio:')||!t.title||navigator.onLine===false)return false;
+ try{
+  jget.nc=1;let pr;try{pr=searchAll((t.title+' '+String(t.artist||'').split(/[,&]/)[0]).trim())}finally{jget.nc=0}
+  const r=(await pr).list,k=key(t),m=r.find(x=>key(x)===k)||r.find(x=>x.id===t.id);if(!m)return false;
+  const c=[m,...(m.alts||[])].filter(x=>x.streams?.length||x.dl),full=c.filter(x=>!x.preview),use=full.length?full:c;if(!use.length)return false;
+  const [a,...rest]=use;t.streams=a.streams.slice();t.dl=a.dl||t.dl;t.preview=!!a.preview;t.alts=rest;t._ts=Date.now();return true;
+ }catch{return false}
+}
+function giveUp(msg){clearTimeout(S.wd);clearTimeout(S.ww);toast(msg);try{au.pause()}catch{}}
+async function fail(why){
+ clearTimeout(S.wd);clearTimeout(S.ww);
+ const t=cur();if(!t||S.i<0)return;
+ const me=t,pos=au.currentTime>2?au.currentTime:(S.seek||0);
+ if(navigator.onLine===false&&!t.local){toast('Internet nahi hai - wapas aate hi chalega');addEventListener('online',()=>{if(cur()===me){S.seek=pos;setSrc()}},{once:true});return}
+ S.fe=(S.fe||0)+1;
+ if(S.fe===1&&why!=='nosrc'){toast('Reconnecting…');S.seek=pos;setTimeout(()=>{if(cur()===me)setSrc()},900);return} /* one quiet retry of the same link */
+ if(t.streams[S.si+1]){S.si++;S.seek=pos;return setSrc()} /* next bitrate */
+ if(!S.rf){S.rf=1;const ok=await refresh(t);if(cur()!==me)return;if(ok){toast('Refreshing song…');S.si=0;S.seek=pos;return setSrc()}}
+ const a=t.alts?.shift();if(a){toast('Trying '+P[a.provider].label);t.streams=a.streams;t.dl=a.dl||t.dl;S.si=0;S.seek=pos;return setSrc()}
+ S.sk=(S.sk||0)+1;
+ if(S.sk>=3){S.sk=0;return giveUp('Songs load nahi ho rahe - network check karke dubara try karo')}
+ toast('Track unavailable, skipping');next(false);
+}
+au.onended=()=>{const t=cur();
+ if(t&&!t.local&&t.duration>45&&isFinite(au.duration)&&au.duration+10<t.duration&&(S.si+1<t.streams.length||t.alts?.length||!S.rf)){S.seek=0;S.fe=1;return fail('short')} /* stream was only a preview / cut short */
+ next(true)};
+au.onerror=()=>{if(window.CL?.eqProbe)return;if(!au.getAttribute('src'))return;fail('error')};
+au.addEventListener('playing',()=>{clearTimeout(S.wd);clearTimeout(S.ww);S.sk=0});
+au.addEventListener('canplay',()=>clearTimeout(S.wd));
+au.addEventListener('waiting',()=>{clearTimeout(S.ww);if(!au.paused&&!cur()?.local)S.ww=setTimeout(()=>{if(au.readyState<3&&!au.paused)fail('stall')},15000)});
+au.addEventListener('pause',()=>clearTimeout(S.ww));
 au.ontimeupdate=()=>{$('#cu').textContent=fmt(au.currentTime);if(au.duration){$('#seek').value=au.currentTime/au.duration*1000;$('#du').textContent=fmt(au.duration)}hilite();if(navigator.mediaSession?.setPositionState&&au.duration>0&&isFinite(au.duration))try{navigator.mediaSession.setPositionState({duration:au.duration,position:Math.min(au.currentTime,au.duration),playbackRate:au.playbackRate||1})}catch{}};
 au.onplay=au.onpause=()=>{$('#pp').innerHTML=au.paused?PLAYI:PAUSEI;if(navigator.mediaSession)navigator.mediaSession.playbackState=au.paused?'paused':'playing'};
 au.onwaiting=()=>$('#pp').textContent='…';au.onplaying=()=>$('#pp').innerHTML=PAUSEI;
@@ -421,4 +452,4 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{pm=null;drawP
 window.CL={views:{},S,au,P,play,toast,ask,enqueue,toggleLike,esc,jget,put,del,all,tx,strip,route,ui,rows,pick,eqProbe:false,parseLrc,searchAll,trending};
 addEventListener('hashchange',route);addEventListener('online',()=>{if(view==='home')route()});route();
 if('serviceWorker'in navigator){const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&(!au.src||au.paused)&&!sessionStorage.cl_swr){sessionStorage.cl_swr=1;location.reload()}});navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(()=>{})}
-</script><script type="module" src="/ext.js"></script><script type="module" src="/dl.js"></script><script type="module" src="/install.js"></script><script type="module" src="/spsearch.js"></script><script type="module" src="/lynx-ui.js"></script><script type="module" src="/premium.js"></script></body></html>
+</script><script type="module" src="/ext.js"></script><script type="module" src="/dl.js"></script><script type="module" src="/install.js"></script><script type="module" src="/spsearch.js"></script><script type="module" src="/lynx-ui.js"></script><script type="module" src="/premium.js"></script><script type="module" src="/fix.js"></script></body></html>
