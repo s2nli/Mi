@@ -89,3 +89,7 @@ Verified: `node --check` on every script. Real playback / live providers not tes
 Tested in headless Chromium with mocked providers: home + all 11 views load with no JS errors; bad/expired link -> re-lookup -> same song plays; one-off error -> quiet retry; 3 dead songs in a row -> stops instead of skipping the queue; preview/short stream -> switches source; natural end -> next track; offline reload shows the app shell + logo from cache.
 Fixes from the audit: image retries now add `?_r=N` (the browser otherwise remembers a failed image URL and never asks the network again); `/api/proxy` rate limit 60 -> 300 per minute and `/api/audio` 20 -> 60 (a burst of Home requests could hit 429 and look like "nothing loads"); removed stray empty file `api/st`.
 Not testable here: real provider APIs and real devices.
+
+## Cloudflare Pages deploy
+`api/*.js` (Vercel) were converted to Pages Functions: `functions/api/proxy.js` and `functions/api/audio.js` (same `/api/proxy?u=` and `/api/audio?u=` URLs). `vercel.json` headers are now in `_headers`.
+Settings: Framework preset None, Build command empty (or `npm run build`), Build output directory `/` (root). Or CLI: `npx wrangler pages deploy .`
